@@ -192,7 +192,17 @@ def run_diffusion_on_qr_code(
             icloud_target = r"C:\Users\Schweini\iCloudDrive\qrs"
             # Using robocopy to copy all output images recursively, excluding older files.
             cmd = f'robocopy "output_images" "{icloud_target}" /E /XO'
-            subprocess.run(["powershell", "-Command", cmd], check=True)
+            proc = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=True)
+            # Robocopy exit codes:
+            # 0: No files were copied.
+            # 1: Some files were copied.
+            # 2: Extra files or mismatches were detected.
+            # 3: Files were copied and extra files were detected.
+            # Exit codes less than 8 are success.
+            if proc.returncode >= 8:
+                print("Robocopy reported an error. Return code:", proc.returncode)
+                print("stdout:", proc.stdout)
+                print("stderr:", proc.stderr)
 
     # If continuous is not set, generate a single image.
     if not continuous:
