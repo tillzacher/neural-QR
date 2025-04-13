@@ -194,3 +194,41 @@ def run_diffusion_on_qr_code(
             generate_and_save()
             # (Optional) add a delay here if desired, e.g.,
             # time.sleep(5)
+
+
+import itertools
+
+def run_parameter_sweep(sweep_params: dict, **kwargs):
+    """
+    Runs the diffusion generation repeatedly for each combination of parameters in sweep_params.
+    
+    Parameters:
+        sweep_params (dict): A dictionary mapping parameter names (as strings) to lists of values.
+            For example: {"guidance_scale": [1, 5, 10, 15, 20]}
+        **kwargs: Other keyword arguments to pass to run_diffusion_on_qr_code.
+                 These will be used as the constant parameters.
+                 
+    For each combination from sweep_params, run_diffusion_on_qr_code will be called and the filename
+    will be augmented with a suffix indicating the parameter values.
+    """
+    # Get the parameter names and lists of values.
+    keys = list(sweep_params.keys())
+    value_lists = list(sweep_params.values())
+    
+    for combination in itertools.product(*value_lists):
+        # Make a copy of kwargs for this iteration.
+        current_kwargs = dict(kwargs)
+        suffix = ""
+        # Update current_kwargs with the current combination values and build filename suffix.
+        for k, val in zip(keys, combination):
+            current_kwargs[k] = val
+            suffix += f"_{k}{val}"
+        # Update the filename in current_kwargs with the suffix.
+        if "filename" in current_kwargs:
+            current_kwargs["filename"] = current_kwargs["filename"] + suffix
+        else:
+            current_kwargs["filename"] = "output" + suffix
+            
+        print("Running with parameters:", ", ".join(f"{k}={v}" for k, v in zip(keys, combination)))
+        # Call your diffusion function.
+        run_diffusion_on_qr_code(**current_kwargs)
