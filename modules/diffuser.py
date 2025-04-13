@@ -115,6 +115,10 @@ def run_diffusion_on_qr_code(
     #pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
     pipe.to(device)
+    
+    pipe.text_encoder.to(device)
+    pipe.vae.to(device)
+    pipe.unet.to(device)
 
     # Resize the QR code image (condition image)
     init_image = resize_for_condition_image(noisy_qr, resolution)
@@ -133,8 +137,7 @@ def run_diffusion_on_qr_code(
             print("Inverted colors of the images")
 
     # Set a random seed for reproducibility
-    #generator = torch.Generator(device=device).manual_seed(seed)
-    generator = torch.Generator().manual_seed(seed)
+    generator = torch.Generator(device=device).manual_seed(seed)
 
     # Generate the image
     result = pipe(
