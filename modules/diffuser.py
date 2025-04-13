@@ -7,6 +7,8 @@ from PIL import ImageOps
 import warnings
 from modules.input_gen import generate_prompt
 from modules.qr_code_gen import generate_qr_code, add_noise_to_qr_code
+import platform
+import subprocess
 
 # Ignore specific warnings
 warnings.filterwarnings(
@@ -184,6 +186,13 @@ def run_diffusion_on_qr_code(
         final_image.save(out_filename)
         if verbose:
             print(f"Image saved to {out_filename}")
+        
+
+        if platform.system() == "Windows":
+            icloud_target = r"C:\Users\Schweini\iCloudDrive\qrs"
+            # Using robocopy to copy all output images recursively, excluding older files.
+            cmd = f'robocopy "output_images" "{icloud_target}" /E /XO'
+            subprocess.run(["powershell", "-Command", cmd], check=True)
 
     # If continuous is not set, generate a single image.
     if not continuous:
@@ -206,29 +215,30 @@ def run_parameter_sweep(sweep_params: dict, **kwargs):
         sweep_params (dict): A dictionary mapping parameter names (as strings) to lists of values.
             For example: {"guidance_scale": [1, 5, 10, 15, 20]}
         **kwargs: Other keyword arguments to pass to run_diffusion_on_qr_code.
-                 These will be used as the constant parameters.
+                 Any keys that are also provided in sweep_params will be removed from kwargs.
                  
-    For each combination from sweep_params, run_diffusion_on_qr_code will be called and the filename
-    will be augmented with a suffix indicating the parameter values.
+    For each combination from sweep_params, run_diffusion_on_qr_code is called and the filename
+    is augmented with a suffix indicating the parameter values.
     """
-    # Get the parameter names and lists of values.
+    # Remove keys from kwargs that are also in sweep_params so that only sweep values are used.
+    for key in sweep_params.keys():
+        kwargs.pop(key, None)
+
     keys = list(sweep_params.keys())
     value_lists = list(sweep_params.values())
     
     for combination in itertools.product(*value_lists):
-        # Make a copy of kwargs for this iteration.
         current_kwargs = dict(kwargs)
         suffix = ""
-        # Update current_kwargs with the current combination values and build filename suffix.
+        # Update current_kwargs with each sweep key's value and build filename suffix.
         for k, val in zip(keys, combination):
             current_kwargs[k] = val
             suffix += f"_{k}{val}"
-        # Update the filename in current_kwargs with the suffix.
+        # Append suffix to filename.
         if "filename" in current_kwargs:
             current_kwargs["filename"] = current_kwargs["filename"] + suffix
         else:
             current_kwargs["filename"] = "output" + suffix
             
         print("Running with parameters:", ", ".join(f"{k}={v}" for k, v in zip(keys, combination)))
-        # Call your diffusion function.
         run_diffusion_on_qr_code(**current_kwargs)
