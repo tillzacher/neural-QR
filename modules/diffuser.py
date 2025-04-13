@@ -4,6 +4,29 @@ from diffusers import StableDiffusionControlNetImg2ImgPipeline, ControlNetModel,
 import torch
 import datetime
 from PIL import ImageOps
+import warnings
+
+# Ignore messages about unsafe serialization
+warnings.filterwarnings(
+    "ignore",
+    message=r"Defaulting to unsafe serialization\. Pass `allow_pickle=False` to raise an error instead\."
+)
+
+# Ignore errors when fetching models for unet and vae (adjust if needed)
+warnings.filterwarnings(
+    "ignore",
+    message=r"An error occurred while trying to fetch models/animerge_v23/unet:"
+)
+warnings.filterwarnings(
+    "ignore",
+    message=r"An error occurred while trying to fetch models/animerge_v23/vae:"
+)
+
+# Ignore warnings about the disabled safety checker
+warnings.filterwarnings(
+    "ignore",
+    message=r"You have disabled the safety checker for"
+)
 
 from modules.qr_code_gen import generate_qr_code, add_noise_to_qr_code
 
