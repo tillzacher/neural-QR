@@ -57,7 +57,9 @@ def run_diffusion_on_qr_code(
     strength=0.9,
     num_inference_steps=150,
     verbose=False,
-    continuous=False
+    continuous=False,
+    make_gif=False,
+    final_static_frames=5
 ):
     # Create a date folder for outputs (updates once per function call)
     now = datetime.datetime.now()
@@ -249,6 +251,30 @@ def run_diffusion_on_qr_code(
                 print("Robocopy reported an error. Return code:", proc.returncode)
                 print("stdout:", proc.stdout)
                 print("stderr:", proc.stderr)
+
+        # If the gif toggle is enabled, compose all intermediate images into an animated GIF.
+        if make_gif:
+            import glob
+            from PIL import Image
+            # Use glob to find all intermediate images saved in current_anim_folder.
+            pattern = os.path.join(current_anim_folder, "latest_intermediate_*.png")
+            intermediate_files = sorted(glob.glob(pattern))
+            if intermediate_files:
+                # Remove the last intermediate file if there is more than one,
+                # because that one is likely the final image (already in final_image).
+                if len(intermediate_files) > 1:
+                    intermediate_files = intermediate_files[:-1]
+                frames = []
+                for img_file in intermediate_files:
+                    frames.append(Image.open(img_file))
+                # Append the final image repeatedly for final_static_frames times.
+                for _ in range(final_static_frames):
+                    frames.append(final_image)
+                gif_out = os.path.join(current_anim_folder, "animation.gif")
+                # Save the frames as an animated GIF (duration in milliseconds, loop=0 means infinite loop).
+                frames[0].save(gif_out, save_all=True, append_images=frames[1:], loop=0, duration=100)
+                if verbose:
+                    print(f"Animated GIF saved to {gif_out}")
 
     # If continuous is not set, generate a single image.
     if not continuous:
