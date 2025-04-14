@@ -143,6 +143,8 @@ def run_diffusion_on_qr_code(
             cur_prompt, cur_filename = generate_prompt()
         out_filename = f"{output_dir}/{cur_filename}.png"
 
+        print(f'Using prompt: {cur_prompt}')
+
         # Generate the QR code and add noise.
         clean_qr = generate_qr_code(message, border=border, mask_logo=mask_logo)
         noisy_qr = add_noise_to_qr_code(
@@ -158,7 +160,11 @@ def run_diffusion_on_qr_code(
         condition_image = resize_for_condition_image(clean_qr, resolution)
         if invert_colors:
             init_image = ImageOps.invert(init_image.convert("RGB"))
+            # save the inverted image
+            init_image.save("output_images/temp/latest_clean.png")
             condition_image = ImageOps.invert(condition_image.convert("RGB"))
+            # save the inverted image
+            condition_image.save("output_images/temp/latest_noisy.png")
 
         # Set a random seed (could update per iteration if desired).
         if device.type == "mps":
@@ -166,7 +172,15 @@ def run_diffusion_on_qr_code(
         else:
             gen = torch.Generator(device=device).manual_seed(seed)
 
-        # Run the pipeline.
+        def save_intermediate(step: int, timestep: int, latents: torch.Tensor):
+            print(f"Step {step}, latent mean: {latents.mean().item()}, std: {latents.std().item()}")
+            intermediate_imgs = pipe.decode_latents(latents)
+            pil_img = pipe.numpy_to_pil(intermediate_imgs)[0]
+            pil_img.save("output_images/temp/latest_intermediate.png")
+            if verbose:
+                print(f"Intermediate image saved at step {step}")
+
+        # Run the pipeline with the callback.
         result = pipe(
             prompt=cur_prompt,
             negative_prompt="ugly, disfigured, low quality, blurry",
@@ -179,6 +193,8 @@ def run_diffusion_on_qr_code(
             generator=gen,
             strength=strength,
             num_inference_steps=num_inference_steps,
+            callback=save_intermediate,  # Call this function every step.
+            callback_steps=1,  # Call after each diffusion step.
         )
         final_image = result.images[0]
         # Save outputs.

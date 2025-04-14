@@ -152,3 +152,107 @@ def generate_wifi_qr_string(ssid, password):
     password_escaped = escape(password)
     qr_string = f'WIFI:S:{ssid_escaped};T:WPA;P:{password_escaped};;'
     return qr_string
+
+def generate_vcard_qr_string(first_name, last_name, phone=None, email=None, organization=None, title=None, address=None):
+    """
+    Generates a vCard 3.0 formatted string for contact data.
+    
+    Parameters:
+      first_name (str): First name.
+      last_name (str): Last name.
+      phone (str, optional): Phone number.
+      email (str, optional): Email address.
+      organization (str, optional): Organization name.
+      title (str, optional): Job title.
+      address (str, optional): A full address string.
+      
+    Returns:
+      str: A vCard formatted string ready for QR code encoding.
+    """
+    vcard = "BEGIN:VCARD\n"
+    vcard += "VERSION:3.0\n"
+    vcard += f"N:{last_name};{first_name};;;\n"
+    vcard += f"FN:{first_name} {last_name}\n"
+    if organization:
+        vcard += f"ORG:{organization}\n"
+    if title:
+        vcard += f"TITLE:{title}\n"
+    if phone:
+        vcard += f"TEL;TYPE=CELL:{phone}\n"
+    if email:
+        vcard += f"EMAIL:{email}\n"
+    if address:
+        # The ADR field is structured; using empty fields for unused parts.
+        vcard += f"ADR;TYPE=HOME:;;{address};;;;\n"
+    vcard += "END:VCARD"
+    return vcard
+
+import urllib.parse
+
+def generate_email_qr_string(email, subject="", body=""):
+    """
+    Generates a mailto URI for email links.
+    
+    Parameters:
+      email (str): Recipient email address.
+      subject (str, optional): Email subject.
+      body (str, optional): Email body text.
+      
+    Returns:
+      str: A mailto URI suitable for QR code encoding.
+    """
+    params = {}
+    if subject:
+        params["subject"] = subject
+    if body:
+        params["body"] = body
+    param_str = urllib.parse.urlencode(params)
+    if param_str:
+        return f"mailto:{email}?{param_str}"
+    else:
+        return f"mailto:{email}"
+    
+def generate_geolocation_qr_string(latitude, longitude, label=None):
+    """
+    Generates a geo URI for encoding a location.
+    
+    Parameters:
+      latitude (float or str): Latitude value.
+      longitude (float or str): Longitude value.
+      label (str, optional): An optional label (query) to pass.
+      
+    Returns:
+      str: A geo URI string to be encoded in a QR code.
+    """
+    if label:
+        return f"geo:{latitude},{longitude}?q={label}"
+    else:
+        return f"geo:{latitude},{longitude}"
+
+def generate_calendar_qr_string(summary, description, location, dtstart, dtend):
+    """
+    Generates an iCalendar formatted string for a calendar event.
+    
+    Parameters:
+      summary (str): Title of the event.
+      description (str): Description of the event.
+      location (str): Location where the event is held.
+      dtstart (str): Event start datetime in format "YYYYMMDDTHHMMSS".
+      dtend (str): Event end datetime in format "YYYYMMDDTHHMMSS".
+      
+    Returns:
+      str: An iCalendar string that can be encoded into a QR code.
+    """
+    qr_string = (
+        "BEGIN:VCALENDAR\n"
+        "VERSION:2.0\n"
+        "BEGIN:VEVENT\n"
+        f"SUMMARY:{summary}\n"
+        f"DESCRIPTION:{description}\n"
+        f"LOCATION:{location}\n"
+        f"DTSTART:{dtstart}\n"
+        f"DTEND:{dtend}\n"
+        "END:VEVENT\n"
+        "END:VCALENDAR"
+    )
+    return qr_string

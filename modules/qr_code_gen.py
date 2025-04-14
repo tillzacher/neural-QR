@@ -44,7 +44,7 @@ def generate_qr_code(data, filename=None, version=None,
     if filename is not None:
         img.save(filename)
 
-    # Always save the "clean" version as well
+    # Save the latest QR code image
     img.save("output_images/temp/latest_clean.png")
 
     return img
