@@ -161,10 +161,10 @@ def run_diffusion_on_qr_code(
         if invert_colors:
             init_image = ImageOps.invert(init_image.convert("RGB"))
             # save the inverted image
-            init_image.save("output_images/temp/latest_clean.png")
+            condition_image.save("output_images/temp/latest_noisy.png")
             condition_image = ImageOps.invert(condition_image.convert("RGB"))
             # save the inverted image
-            condition_image.save("output_images/temp/latest_noisy.png")
+            init_image.save("output_images/temp/latest_clean.png")
 
         # Set a random seed (could update per iteration if desired).
         if device.type == "mps":
@@ -188,6 +188,14 @@ def run_diffusion_on_qr_code(
         os.makedirs(current_anim_folder, exist_ok=True)
 
         def save_intermediate(step: int, timestep: int, latents: torch.Tensor):
+            if num_inference_steps >= 100:
+                # save only every 4nd step
+                if step % 4 != 0:
+                    return
+            elif num_inference_steps >= 50:
+                # save only every 2nd step
+                if step % 2 != 0:
+                    return
             if verbose:
                 print(f"Step {step}, latent mean: {latents.mean().item()}, std: {latents.std().item()}")
             intermediate_imgs = pipe.decode_latents(latents)
