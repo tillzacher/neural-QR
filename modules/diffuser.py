@@ -171,14 +171,36 @@ def run_diffusion_on_qr_code(
             gen = torch.Generator().manual_seed(seed)
         else:
             gen = torch.Generator(device=device).manual_seed(seed)
+        
+        # make sure the directory exists
+        anim_parent = "output_images/temp/anim"
+        os.makedirs(anim_parent, exist_ok=True)
+        # Find all subfolders that consist only of digits.
+        existing_folders = [
+            d for d in os.listdir(anim_parent)
+            if os.path.isdir(os.path.join(anim_parent, d)) and d.isdigit()
+        ]
+        if existing_folders:
+            next_folder_num = max(int(d) for d in existing_folders) + 1
+        else:
+            next_folder_num = 0
+        current_anim_folder = os.path.join(anim_parent, f"{next_folder_num:03d}")
+        os.makedirs(current_anim_folder, exist_ok=True)
 
         def save_intermediate(step: int, timestep: int, latents: torch.Tensor):
-            print(f"Step {step}, latent mean: {latents.mean().item()}, std: {latents.std().item()}")
+            if verbose:
+                print(f"Step {step}, latent mean: {latents.mean().item()}, std: {latents.std().item()}")
             intermediate_imgs = pipe.decode_latents(latents)
             pil_img = pipe.numpy_to_pil(intermediate_imgs)[0]
+            # Optionally, overwrite a generic intermediate image.
             pil_img.save("output_images/temp/latest_intermediate.png")
+            # Format the step number with leading zeros.
+            step_str = str(step).zfill(3)
+            # Construct the full path for the intermediate image in the new folder.
+            out_path = os.path.join(current_anim_folder, f"latest_intermediate_{step_str}.png")
+            pil_img.save(out_path)
             if verbose:
-                print(f"Intermediate image saved at step {step}")
+                print(f"Intermediate image saved at step {step_str} in folder {current_anim_folder}")
 
         # Run the pipeline with the callback.
         result = pipe(
