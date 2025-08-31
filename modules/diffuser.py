@@ -58,8 +58,8 @@ def run_diffusion_on_qr_code(
     num_inference_steps=150,
     verbose=False,
     continuous=False,
-    make_gif=False,
-    final_static_frames=5
+    make_gif=True,
+    final_static_frames=30
 ):
     # Create a date folder for outputs (updates once per function call)
     now = datetime.datetime.now()
@@ -68,28 +68,33 @@ def run_diffusion_on_qr_code(
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Device selection and type assignment.
+    # ------------------------------------------------------------
+    # Device & dtype selection – CUDA ➜ MPS ➜ CPU (fallback)
+    # ------------------------------------------------------------
     if torch.cuda.is_available():
         device = torch.device("cuda")
-        torch_dtype = torch.float16
+        torch_dtype = torch.float16          # fastest & smallest on GPU
         if verbose:
             print("Using CUDA device")
     elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
         device = torch.device("mps")
-        torch_dtype = torch.float32
+        torch_dtype = torch.float32          # float16 isn’t fully supported on MPS
         if verbose:
-            print("Using MPS device")
+            print("Using Apple M-series (MPS) device")
     else:
-        device = torch.device("cpu")
+        device = torch.device("cpu")         # 🚥 graceful fallback
         torch_dtype = torch.float32
         if verbose:
             print("Using CPU device")
 
-    # Load ControlNet model and pipeline (only once).
+    # ------------------------------------------------------------
+    # Load ControlNet model and pipeline (only once per call)
+    # ------------------------------------------------------------
     controlnet = ControlNetModel.from_pretrained(
         controlnet_model_id,
         torch_dtype=torch_dtype
     ).to(device)
+
     pipe = StableDiffusionControlNetImg2ImgPipeline.from_pretrained(
         model_id,
         controlnet=controlnet,
@@ -97,9 +102,11 @@ def run_diffusion_on_qr_code(
         torch_dtype=torch_dtype
     ).to(device)
 
-    # Enable attention slicing.
+    # Memory-/speed tweaks
     pipe.enable_attention_slicing()
-    if device.type != "mps":
+
+    # Off-load large sub-modules to CPU *only* when we’re running on a GPU.
+    if device.type == "cuda":
         pipe.enable_model_cpu_offload()
 
     # Setup scheduler and move models to device.
@@ -163,10 +170,10 @@ def run_diffusion_on_qr_code(
         if invert_colors:
             init_image = ImageOps.invert(init_image.convert("RGB"))
             # save the inverted image
-            condition_image.save("output_images/temp/latest_noisy.png")
+            init_image.save("output_images/temp/latest_noisy.png")
             condition_image = ImageOps.invert(condition_image.convert("RGB"))
             # save the inverted image
-            init_image.save("output_images/temp/latest_clean.png")
+            condition_image.save("output_images/temp/latest_clean.png")
 
         # Set a random seed (could update per iteration if desired).
         if device.type == "mps":
@@ -270,11 +277,16 @@ def run_diffusion_on_qr_code(
                 # Append the final image repeatedly for final_static_frames times.
                 for _ in range(final_static_frames):
                     frames.append(final_image)
-                gif_out = os.path.join(current_anim_folder, "animation.gif")
+                
+                # remove the last 4 characters from the output filename
+                gif_out = out_filename[:-4] + ".gif"
                 # Save the frames as an animated GIF (duration in milliseconds, loop=0 means infinite loop).
                 frames[0].save(gif_out, save_all=True, append_images=frames[1:], loop=0, duration=100)
                 if verbose:
                     print(f"Animated GIF saved to {gif_out}")
+                # Finally delete the intermediate images.
+                for img_file in intermediate_files:
+                    os.remove(img_file)
 
     # If continuous is not set, generate a single image.
     if not continuous:
