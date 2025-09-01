@@ -3,8 +3,13 @@
 Stable Diffusion–powered, flexible, _artistic_ QR code generation that (mostly) actually scans.
 
 <p align="center">
-  <img src="ressources/canvas_banner.png" width="100%" alt="Artistic QR collage placeholder">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="ressources/canvas_banner_dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="ressources/canvas_banner_light.png">
+    <img src="ressources/canvas_banner_light.png" width="100%" alt="Logo">
+  </picture>
 </p>
+
 
 > TL;DR: neural-QR turns any payload (URL, Wi-Fi, vCard, events, etc.) into high-fidelity art QRs using Stable Diffusion + ControlNet, with a flexibility-first pipeline and tooling for prompts, sweeps, and animations. Optimized for Apple Silicon or NVIDIA.
 
