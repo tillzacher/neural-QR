@@ -1,6 +1,6 @@
 /.venv/
 /.conda/
-/models/
+/models/*
 /output_images/
 /modules/__pycache__/
 modules/__pycache__/__init__.cpython-310.pyc

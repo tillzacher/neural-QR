@@ -21,18 +21,17 @@ Stable Diffusion–powered, flexible, _artistic_ QR code generation that (mostly
 - [How it Works](#how-it-works)
 - [Install](#install)
 - [Quickstart](#quickstart)
-- [Inputs Supported](#inputs-supported)
+- [Supported Inputs](#supported-inputs)
 - [Parameters That Matter](#parameters-that-matter)
-- [Examples / Gallery](#examples--gallery)
+- [Examples](#examples)
 - [Performance & Compatibility](#performance--compatibility)
 - [Scannability Checklist](#scannability-checklist)
-- [Roadmap](#roadmap)
 - [License](#license)
 
 ---
 
 ## Why neural-QR
-Most "artistic QR" projects either stop at novelty or trap you in proprietary black boxes. **neural-QR** is open end-to-end and built to integrate, extend, and scale:
+**neural-QR** is open end-to-end and built to integrate, extend, and scale:
 - **Open by design:** Runs entirely on open models and OSS tooling. No closed APIs, no paywalled endpoints, no surprises.
 - **Ecosystem-friendly:** Plug in SD 1.5/XL checkpoints, ControlNets, and LoRAs from Hugging Face or Civitai; swap schedulers or model components without rewriting your pipeline.
 - **Aesthetic control, automated:** Structured prompt generators + deterministic seeds + batch sweeps give you controllable style exploration that still lands on scannable outputs.
@@ -56,33 +55,44 @@ Most "artistic QR" projects either stop at novelty or trap you in proprietary bl
 ## How it Works
 
 
-Key idea: **ControlNet locks structure** where scanners need it, while the model paints everything else. The tiered noise keeps the "math bits" readable and the "art bits" expressive.
+Key idea: **ControlNet locks structure** where scanners need it, while the model paints everything else. The tiered noise keeps the code bits readable and the art bits expressive.
 
 ---
 
 ## Install
 > Requires **Python 3.10+** and a recent **PyTorch** build (CUDA 11.8+ for NVIDIA, MPS for Apple Silicon). Disk space ~8–12 GB for models/caches depending on checkpoints.
 
-> **Note:** Model names/checkpoints are configurable in this repo. If you prefer SDXL vs SD1.5 or a specific QR-focused ControlNet, set that in the config/flags below.
+**1) Install Dependencies**
+
+**2) Download Model Checkpoints**
+- ControlNet Checkpoints are downloaded automatically assuming huggingface token is set. By default from [monster-labs](https://huggingface.co/monster-labs/control_v1p_sd15_qrcode_monster/commits/main/v2). Shoutout to @monster-labs for sharing this great model! Other controlnets can be passed into the function call under the `controlnet_model_id` parameter.
+- Stable Diffusion Checkpoints: Stable Diffusion 1.5 Checkpoints have to be provided in diffusers format. Place them in the `models/` folder and referr to this folder in the `model_id` input parameter.
+
 
 ---
 
 ## Quickstart
 
-**1) Minimal Run** — generate an artistic QR for a URL with a style prompt.
+In the `entry.ipynb` notebook, you will find example function calls that demonstrate how to use the library.
+Output images will be saved to the `output_images/` folder.
 
+_Tip:_ In `output_images/temp/`, you can find intermediate images from the diffusion process for debugging or just to see how the model is progressing step-by-step. Just open the `latest_intermediate.png` file in a extra vscode tab.
 
-**2) Automatic Prompting** — let the built-in prompt mixer blend styles.
+## Scannability Checklist
+Because beautiful but broken isn’t a win.
 
-**3) Parameter Sweep** — find the sweet spot.
+- **QR Error Correction**: Use appropriate level (M or Q is a good starting point).  
+- **Creative Zone**: Keep a clean margin around the code (at least 4 modules).  
+- **Prompt Adherence**: Guides how much the model follows your prompt. Choose values between 7-15.
+- **controlNet Strength**: Adjusts how closely the QR structure is followed. Choose values between 0.7-2.0. Usually, prompt adherence and controlNet strength describe a trade-off between creativity and scannability.
 
+- **Steps**: More steps = more detail, but slower processing. 20-50 is a good range.
 
-**4) Animate the Diffusion**
-
+See github pages page for interactive demo where the key parameters can be adjusted live:
 
 ---
 
-## Inputs Supported
+## Supported Inputs
 - **URL / Text** – Any link or plain text payload  
 - **Wi-Fi** – `WIFI:S:<ssid>;T:<WEP|WPA|nopass>;P:<password>;H:<true|false>;`
 - **vCard** – `BEGIN:VCARD…END:VCARD` (name, phone, email, org, etc.)
@@ -90,14 +100,10 @@ Key idea: **ControlNet locks structure** where scanners need it, while the model
 - **Geolocation** – `geo:latitude,longitude?q=Label`
 - **Calendar** – iCalendar (VEVENT) strings for sharable events
 
----
-
-## Parameters That Matter
-
 
 ---
 
-## Examples / Gallery
+## Examples
 > 
 
 <p align="center">
@@ -122,44 +128,17 @@ Key idea: **ControlNet locks structure** where scanners need it, while the model
 - **MPS (Apple Silicon)** – Works well on M2/M3; enable attention slicing to keep memory sane.  
 - **CPU** – Works, but you’ll have time to reflect on life choices. Use low steps/resolution.
 
-Memory-savvy toggles implemented:
+Memory optimization with:
 - **Attention slicing** and optional **CPU offload**
 - **Autocast/FP16** where safe
 - Chunked batching for sweeps
 
 ---
 
-## Scannability Checklist
-Because "beautiful but broken" isn’t a win.
 
-- **QR Error Correction**: Use appropriate level (M or Q is a good starting point).  
-- **Creative Zone**: Keep a clean margin around the code (at least 4 modules).  
-- **Contrast**: Dark modules on light background scan best; if in doubt, **`--invert`**.  
-- **Prompt Adherence**:
-
-- **controlNet Strength**:
-
-- **Test it**: 
-
----
-
-## Roadmap
-- [ ] SDXL-first pipeline with QR-aware adapters
-- [ ] In-painting pass for logo insertion with structural checks
-- [ ] Web UI (FastAPI + minimal React) for client demos
-- [ ] Automatic multi-scanner validation & scoring
-- [ ] Prompt library export/import & runbooks
-
----
 
 ## License
-This project is released under the .... License
+This project is released under the MIT License
 Model checkpoints remain subject to their respective licenses/ToS.
-
----
-
-### Credits
-- Stable Diffusion & ControlNet ecosystems for the core generative backbone.
-- Everyone building QR-aware control models and sharing research/artifacts.
 
 ---
