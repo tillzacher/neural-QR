@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Parameter Grid Explorer</title>
+  <style>
+    :root { --bg:#0f1318; --card:#151a1f; --border:#222a33; --text:#e6edf3; --muted:#9da9b5; --accent:#79c0ff; --track:#1a2230; --badge:#1f2630; --badge-b:#2a3440; --meta:rgba(157,169,181,.18); --select-bg:#0f141b; color-scheme: dark }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(600px 400px at 20% 0%,#0e1420 0%, var(--bg) 80%);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif}
+    html,body{background-color:var(--bg)}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px;display:grid;gap:18px}
+    h1{margin:0;font-size:22px;font-weight:650;letter-spacing:.2px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+
+    .row{display:grid;gap:16px}
+    @media(min-width:900px){.row{grid-template-columns:minmax(520px,2fr) minmax(320px,1fr)}}
+
+    .stage{position:relative;overflow:visible}
+    .brand-layer{position:absolute;top:-100px;right:-500px;width:min(60vw,720px);max-width:820px;height:auto;pointer-events:none;transform:rotate(0deg)}
+    .brand-bg{opacity:.08;z-index:0}
+    .card{position:relative;z-index:1}
+
+    .img-card{display:grid;gap:12px}
+    .img-wrap{width:100%;aspect-ratio:1/1;background:#0c1117;border:1px solid var(--border);border-radius:12px;display:grid;place-items:center;overflow:hidden}
+    img{width:100%;height:100%;object-fit:contain;display:block}
+    .skeleton{width:40%;height:40%;background:linear-gradient(90deg,#161b22,#202833,#161b22);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:12px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .meta{color:var(--meta);font-size:13px;word-break:break-all}
+
+    .panel{display:grid;gap:16px;align-content:start}
+    .brand{display:flex;align-items:center;justify-content:center;padding:6px 0}
+    .logo{width:100%;height:auto;max-width:100%;display:block}
+
+    .label{font-size:13px;color:var(--muted);margin-bottom:6px}
+    .field{display:block}
+    select{width:100%;background:var(--select-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;outline:none;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+
+    .control{display:grid;gap:8px}
+    .control-head{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
+    input[type="range"]{width:100%;height:34px;appearance:none;background:transparent}
+    input[type="range"]::-webkit-slider-runnable-track{height:6px;background:var(--track);border-radius:999px}
+    input[type="range"]::-webkit-slider-thumb{appearance:none;margin-top:-6px;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #0d1623}
+    input[type="range"]::-moz-range-track{height:6px;background:var(--track);border-radius:999px}
+    input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #0d1623}
+    .value-badge{background:var(--badge);border:1px solid var(--badge-b);padding:3px 8px;border-radius:999px;font-variant-numeric:tabular-nums;font-size:13px}
+
+    .foot{color:var(--muted);font-size:12px}
+
+    /* Light mode override */
+    @media (prefers-color-scheme: light) {
+      :root { --bg:#f6f8fa; --card:#ffffff; --border:#e5e7eb; --text:#0b1220; --muted:#556275; --accent:#0b6bcb; --track:#e5e7eb; --badge:#eef2f6; --badge-b:#e1e7ee; --meta:rgba(55,65,81,.35); --select-bg:#ffffff; color-scheme: light }
+      body{background:linear-gradient(180deg,#eef2f6 0%, #f6f8fa 60%)}
+      .img-wrap{background:#f3f6fa}
+      select{background:var(--select-bg);color:var(--text);border:1px solid var(--border)}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Parameter Grid Explorer</h1>
+
+    <div class="stage">
+      <img id="brandBg" class="brand-layer brand-bg" alt="" />
+      <div class="card row">
+        <div class="img-card">
+          <div class="img-wrap" id="imgWrap">
+            <div class="skeleton" id="skeleton"></div>
+            <img id="preview" alt="" hidden />
+          </div>
+          <div class="meta" id="meta">—</div>
+        </div>
+
+        <div class="panel">
+          <div class="brand"><img id="brandLogo" class="logo" alt="logo" /></div>
+
+          <div class="field">
+            <div class="label">Prompt</div>
+            <select id="promptSelect"></select>
+          </div>
+
+          <div class="control">
+            <div class="control-head"><span>Conditioning scale</span><span id="condVal" class="value-badge">—</span></div>
+            <input id="condSlider" type="range" min="0" max="0" step="1" />
+          </div>
+
+          <div class="control">
+            <div class="control-head"><span>Guidance scale</span><span id="guideVal" class="value-badge">—</span></div>
+            <input id="guideSlider" type="range" min="0" max="0" step="1" />
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const OWNER_OVERRIDE = '';
+    const REPO_OVERRIDE = '';
+    const BRANCH_OVERRIDE = '';
+    const IMAGES_DIR = 'readme_imgs';
+
+    function basePath() {
+      if (location.hostname.endsWith('github.io')) {
+        const segs = location.pathname.split('/').filter(Boolean);
+        return segs.length ? '/' + segs[0] + '/' : '/';
+      }
+      return '/';
+    }
+    const BASE = basePath();
+
+    function setLogo() {
+      const darkHeader = `${BASE}ressources/canvas_title_dark.png`;
+      const lightHeader = `${BASE}ressources/canvas_title_light.png`;
+      const darkBg = `${BASE}ressources/icon_dark.png`;
+      const lightBg = `${BASE}ressources/icon_light.png`;
+      const el = document.getElementById('brandLogo');
+      const bgEl = document.getElementById('brandBg');
+      function apply() {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        el.src = prefersDark ? darkHeader : lightHeader;
+        bgEl.src = prefersDark ? darkBg : lightBg;
+      }
+      apply();
+      if (window.matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        if (mq.addEventListener) mq.addEventListener('change', apply); else mq.addListener(apply);
+      }
+    }
+
+    async function tryLocalList() {
+      try {
+        const r = await fetch(`/api/list?ts=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return null;
+        const j = await r.json();
+        if (!Array.isArray(j.files) || !j.files.length) return null;
+        return j.files.map(name => ({ name, url: `${BASE}${IMAGES_DIR}/${name}` }));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function detectRepo() {
+      const params = new URL(location.href).searchParams;
+      let owner = (params.get('owner') || OWNER_OVERRIDE || '').trim();
+      let repo = (params.get('repo') || REPO_OVERRIDE || '').trim();
+      let branch = (params.get('branch') || BRANCH_OVERRIDE || '').trim();
+      if (location.hostname.endsWith('github.io')) {
+        if (!owner) owner = location.hostname.split('.')[0];
+        const segs = location.pathname.split('/').filter(Boolean);
+        if (!repo && segs.length) repo = segs[0];
+      }
+      if (!branch) branch = 'main';
+      return { owner, repo, branch };
+    }
+
+    async function fetchJSON(url) {
+      const token = new URL(location.href).searchParams.get('token');
+      const headers = { 'Accept': 'application/vnd.github+json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const r = await fetch(url, { headers });
+      if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
+      return r.json();
+    }
+
+    async function listViaGitHub() {
+      const { owner, repo, branch } = detectRepo();
+      if (!owner || !repo) throw new Error('Missing owner/repo. Pass ?owner=YOURUSER&repo=YOURREPO or set OWNER_OVERRIDE/REPO_OVERRIDE.');
+      const list = await fetchJSON(`https://api.github.com/repos/${owner}/${repo}/contents/${IMAGES_DIR}?ref=${encodeURIComponent(branch)}`);
+      return list
+        .filter(x => x.type === 'file' && /\.(png|jpe?g|webp)$/i.test(x.name))
+        .map(x => ({ name: x.name, url: x.download_url }));
+    }
+
+    function indexFiles(fileObjs) {
+      const re = /^(.+)_conditioning_scale([0-9]+(?:\.[0-9]+)?)_guidance_scale([0-9]+)\.(?:png|jpe?g|webp)$/i;
+      const byPrefix = new Map();
+      for (const f of fileObjs) {
+        const m = f.name.match(re);
+        if (!m) continue;
+        const rawPrefix = m[1];
+        const condStr = m[2];
+        const guideStr = m[3];
+        let bucket = byPrefix.get(rawPrefix);
+        if (!bucket) {
+          bucket = { rawPrefix, display: displayNameForPrefix(rawPrefix), conds: new Set(), guides: new Set(), grid: new Map() };
+          byPrefix.set(rawPrefix, bucket);
+        }
+        bucket.conds.add(condStr);
+        bucket.guides.add(guideStr);
+        if (!bucket.grid.has(condStr)) bucket.grid.set(condStr, new Map());
+        bucket.grid.get(condStr).set(guideStr, f.url);
+      }
+      for (const b of byPrefix.values()) {
+        b.condArr = Array.from(b.conds).sort((a, c) => parseFloat(a) - parseFloat(c));
+        b.guideArr = Array.from(b.guides).sort((a, c) => parseFloat(a) - parseFloat(c));
+      }
+      return { byPrefix };
+    }
+
+    function displayNameForPrefix(prefix) {
+      let d = prefix.replace(/_control[-_ ]?net$/i, '');
+      d = d.replace(/_/g, ' ');
+      return d.trim();
+    }
+
+    function findIndexByApprox(arr, valueStr, isFloat) {
+      const exact = arr.indexOf(valueStr);
+      if (exact !== -1) return exact;
+      const val = isFloat ? parseFloat(valueStr) : parseInt(valueStr, 10);
+      let bestIdx = 0, bestDelta = Infinity;
+      for (let i = 0; i < arr.length; i++) {
+        const v = isFloat ? parseFloat(arr[i]) : parseInt(arr[i], 10);
+        const d = Math.abs(v - val);
+        if (d < bestDelta) { bestDelta = d; bestIdx = i; }
+      }
+      return bestIdx;
+    }
+
+    function wireUI(data) {
+      const sel = document.getElementById('promptSelect');
+      const condSlider = document.getElementById('condSlider');
+      const guideSlider = document.getElementById('guideSlider');
+      const condVal = document.getElementById('condVal');
+      const guideVal = document.getElementById('guideVal');
+      const img = document.getElementById('preview');
+      const skeleton = document.getElementById('skeleton');
+      const meta = document.getElementById('meta');
+
+      const entries = Array.from(data.byPrefix.values()).sort((a,b)=>a.display.localeCompare(b.display));
+      entries.forEach(e => { const o = document.createElement('option'); o.value = e.rawPrefix; o.textContent = e.display; sel.appendChild(o); });
+
+      function setSlidersFor(prefix) {
+        const b = data.byPrefix.get(prefix);
+        condSlider.min = 0; condSlider.max = Math.max(0, b.condArr.length - 1); condSlider.step = 1;
+        guideSlider.min = 0; guideSlider.max = Math.max(0, b.guideArr.length - 1); guideSlider.step = 1;
+        const url = new URL(location.href);
+        const cParam = url.searchParams.get('c');
+        const gParam = url.searchParams.get('g');
+        const cIdx = cParam ? findIndexByApprox(b.condArr, cParam, true) : 0;
+        const gIdx = gParam ? findIndexByApprox(b.guideArr, gParam, false) : 0;
+        condSlider.value = cIdx;
+        guideSlider.value = gIdx;
+        updateImage();
+      }
+
+      function currentState() {
+        const prefix = sel.value;
+        const b = data.byPrefix.get(prefix);
+        const ci = parseInt(condSlider.value, 10);
+        const gi = parseInt(guideSlider.value, 10);
+        const condStr = b.condArr[ci];
+        const guideStr = b.guideArr[gi];
+        const url = b.grid.get(condStr)?.get(guideStr) || null;
+        return { prefix, display: b.display, condStr, guideStr, url };
+      }
+
+      function updateImage() {
+        const st = currentState();
+        condVal.textContent = st.condStr;
+        guideVal.textContent = st.guideStr;
+        meta.textContent = `${st.prefix}_conditioning_scale${st.condStr}_guidance_scale${st.guideStr}`;
+        skeleton.hidden = false; img.hidden = true; img.removeAttribute('src'); img.alt = meta.textContent;
+        if (!st.url) { skeleton.hidden = true; meta.textContent += ' (missing image)'; return; }
+        img.onload = () => { skeleton.hidden = true; img.hidden = false; };
+        img.onerror = () => { skeleton.hidden = true; meta.textContent += ' (failed to load)'; };
+        img.src = st.url;
+        const url = new URL(location.href);
+        url.searchParams.set('prefix', st.prefix);
+        url.searchParams.set('c', st.condStr);
+        url.searchParams.set('g', st.guideStr);
+        history.replaceState(null, '', url.toString());
+      }
+
+      sel.addEventListener('change', () => setSlidersFor(sel.value));
+      condSlider.addEventListener('input', updateImage);
+      guideSlider.addEventListener('input', updateImage);
+
+      const params = new URL(location.href).searchParams;
+      const initialPrefix = params.get('prefix') && data.byPrefix.has(params.get('prefix')) ? params.get('prefix') : entries[0].rawPrefix;
+      sel.value = initialPrefix;
+      setSlidersFor(initialPrefix);
+    }
+
+    async function init() {
+      setLogo();
+      let files = await tryLocalList();
+      if (!files) files = await listViaGitHub();
+      if (!files || !files.length) throw new Error('No images found.');
+      const data = indexFiles(files);
+      wireUI(data);
+    }
+
+    init().catch(err => {
+      const wrap = document.getElementById('imgWrap');
+      wrap.innerHTML = `<div style="color:#f88; padding:12px; text-align:center">${err.message}</div>`;
+    });
+  </script>
+</body>
+</html>

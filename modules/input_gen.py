@@ -131,7 +131,8 @@ def generate_prompt():
     theme = random.choice(themes)
     
     # Construct the prompt
-    prompt = f"A QR code, cleverly {verb} into a {adjective} {subject}, {theme} theme, {artstyle}, 3D rendered"
+    # prompt = f"A QR code, cleverly {verb} into a {adjective} {subject}, {theme} theme, {artstyle}, 3D rendered"
+    prompt = f"A vibrant scene of a {adjective} {subject}, {theme} theme, {artstyle}, 3D rendered, high detail, intricate design"
     
     # Generate a unique and concise filename based on selected elements
     # Replace spaces with underscores and remove special characters for filesystem compatibility
