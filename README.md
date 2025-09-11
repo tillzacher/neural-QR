@@ -11,7 +11,7 @@ Stable Diffusion–powered, flexible, _artistic_ QR code generation that (mostly
 </p>
 
 
-> TL;DR: neural-QR turns any payload (URL, Wi-Fi, vCard, events, etc.) into high-fidelity art QRs using Stable Diffusion + ControlNet, with a flexibility-first pipeline and tooling for prompts, sweeps, and animations. Optimized for Apple Silicon or NVIDIA.
+> TL;DR: neural-QR turns any payload (URL, Wi-Fi, vCard, events, etc.) into high-fidelity art QRs using Stable Diffusion + ControlNet, with a flexibility-first pipeline and tooling for prompts, sweeps, and animations. Optimized for Apple Silicon or NVIDIA. Try Parameters Explorer [here](https://tillzacher.github.io/neural-QR/grid-explorer.html).
 
 ---
 
@@ -88,7 +88,7 @@ Because beautiful but broken isn’t a win.
 
 - **Steps**: More steps = more detail, but slower processing. 20-50 is a good range.
 
-See github pages page for interactive demo where the key parameters can be adjusted live:
+See [github pages page](https://tillzacher.github.io/neural-QR/grid-explorer.html) for interactive demo where the key parameters can be adjusted live.
 
 ---
 
