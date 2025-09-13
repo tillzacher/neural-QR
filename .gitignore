@@ -3,9 +3,7 @@
 /models/*
 /output_images/
 /modules/__pycache__/
-
 /models.zip
-
-modules/__pycache__/
 .DS_Store
 modules/__pycache__/*
+.DS_Store

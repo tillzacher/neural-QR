@@ -47,8 +47,8 @@ def run_diffusion_on_qr_code(
     center_noise_level=0.5,
     noise_level=0.5,
     border_noise_level=1.0,
-    model_id='models/animerge_v23',
-    controlnet_model_id='DionTimmer/controlnet_qrcode-control_v1p_sd15',
+    model_id='models/photon_v1',
+    controlnet_model_id='monster-labs/control_v1p_sd15_qrcode_monster',
     resolution=768,
     seed=11111,
     invert_colors=False,
@@ -80,7 +80,7 @@ def run_diffusion_on_qr_code(
         device = torch.device("mps")
         torch_dtype = torch.float32          # float16 isn’t fully supported on MPS
         if verbose:
-            print("Using Apple M-series (MPS) device")
+            print("Using MPS device")
     else:
         device = torch.device("cpu")         # 🚥 graceful fallback
         torch_dtype = torch.float32
