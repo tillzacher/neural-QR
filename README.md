@@ -149,11 +149,3 @@ Memory optimization with:
 - Chunked batching for sweeps
 
 ---
-
-
-
-## License
-This project is released under the MIT License
-Model checkpoints remain subject to their respective licenses/ToS.
-
----
