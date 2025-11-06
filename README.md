@@ -104,20 +104,35 @@ See [github pages page](https://tillzacher.github.io/neural-QR/grid-explorer.htm
 ---
 
 ## Examples
-> 
 
 <p align="center">
-  <img src="docs/examples/example-01.png" width="32%" alt="Example 1 placeholder">
-  <img src="docs/examples/example-02.png" width="32%" alt="Example 2 placeholder">
-  <img src="docs/examples/example-03.png" width="32%" alt="Example 3 placeholder">
+  <img src="readme_imgs/examples.gif" width="100%" alt="Animated gallery of QR examples">
+  
 </p>
 
 <details>
-  <summary>More examples</summary>
+  <summary>Static images</summary>
 
-  ![Example 4](docs/examples/example-04.png)
-  ![Example 5](docs/examples/example-05.png)
-  ![Example 6](docs/examples/example-06.png)
+  <p align="center">
+    <img src="readme_imgs/ancient_floating_island_pixel_art_eco_friendly.png" width="32%" alt="ancient_floating_island_pixel_art_eco_friendly">
+    <img src="readme_imgs/ancient_ice_cave_surrealism_glowing.png" width="32%" alt="ancient_ice_cave_surrealism_glowing">
+    <img src="readme_imgs/ancient_mountain_landscape_cyberpunk_style_transparent.png" width="32%" alt="ancient_mountain_landscape_cyberpunk_style_transparent">
+  </p>
+  <p align="center">
+    <img src="readme_imgs/colorful_market_scene_pop_art_romantic.png" width="32%" alt="colorful_market_scene_pop_art_romantic">
+    <img src="readme_imgs/dynamic_enchanted_forest_fantasy_art_sci_fi.png" width="32%" alt="dynamic_enchanted_forest_fantasy_art_sci_fi">
+    <img src="readme_imgs/ethereal_ancient_temple_photorealistic_rendering_stealth.png" width="32%" alt="ethereal_ancient_temple_photorealistic_rendering_stealth">
+  </p>
+  <p align="center">
+    <img src="readme_imgs/minimalist_underwater_scene_digital_art_noir.png" width="32%" alt="minimalist_underwater_scene_digital_art_noir">
+    <img src="readme_imgs/monochrome_fantasy_castle_graffiti_style_horror.png" width="32%" alt="monochrome_fantasy_castle_graffiti_style_horror">
+    <img src="readme_imgs/ornate_garden_cyberpunk_style_gothic.png" width="32%" alt="ornate_garden_cyberpunk_style_gothic">
+  </p>
+  <p align="center">
+    <img src="readme_imgs/serene_mountain_landscape_cyberpunk_style_retro.png" width="32%" alt="serene_mountain_landscape_cyberpunk_style_retro">
+    <img src="readme_imgs/serene_ocean_abstract_expressionism_crystal_like.png" width="32%" alt="serene_ocean_abstract_expressionism_crystal_like">
+    <img src="readme_imgs/surreal_mountain_landscape_digital_art_modern.png" width="32%" alt="surreal_mountain_landscape_digital_art_modern">
+  </p>
 
 </details>
 
