@@ -23,10 +23,10 @@
     .card{position:relative;z-index:1}
 
     .img-card{display:grid;gap:12px}
-    .img-wrap{width:100%;aspect-ratio:1/1;background:#0c1117;border:1px solid var(--border);border-radius:12px;display:grid;place-items:center;overflow:hidden}
-    img{width:100%;height:100%;object-fit:contain;display:block}
-    .skeleton{width:40%;height:40%;background:linear-gradient(90deg,#161b22,#202833,#161b22);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:12px}
-    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .img-wrap{width:100%;aspect-ratio:1/1;background:#0c1117;border:1px solid var(--border);border-radius:12px;position:relative;overflow:hidden}
+    .img-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+    .layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .18s ease;will-change:opacity}
+    .layer.show{opacity:1}  
     .meta{color:var(--meta);font-size:13px;word-break:break-all}
 
     .panel{display:grid;gap:16px;align-content:start}
@@ -48,7 +48,6 @@
 
     .foot{color:var(--muted);font-size:12px}
 
-    /* Light mode override */
     @media (prefers-color-scheme: light) {
       :root { --bg:#f6f8fa; --card:#ffffff; --border:#e5e7eb; --text:#0b1220; --muted:#556275; --accent:#0b6bcb; --track:#e5e7eb; --badge:#eef2f6; --badge-b:#e1e7ee; --meta:rgba(55,65,81,.35); --select-bg:#ffffff; color-scheme: light }
       body{background:linear-gradient(180deg,#eef2f6 0%, #f6f8fa 60%)}
@@ -66,9 +65,8 @@
       <div class="card row">
         <div class="img-card">
           <div class="img-wrap" id="imgWrap">
-            <div class="skeleton" id="skeleton"></div>
-            <img id="preview" alt="" hidden />
-          </div>
+            <img id="layer0" class="layer" alt="" hidden />
+            <img id="layer1" class="layer" alt="" hidden /></div>
           <div class="meta" id="meta">—</div>
         </div>
 
@@ -89,7 +87,6 @@
             <div class="control-head"><span>Guidance scale</span><span id="guideVal" class="value-badge">—</span></div>
             <input id="guideSlider" type="range" min="0" max="0" step="1" />
           </div>
-
         </div>
       </div>
     </div>
@@ -218,15 +215,61 @@
       return bestIdx;
     }
 
+    const layers = [];
+    let activeLayer = 0;
+    let currentUrl = '';
+    let loadToken = 0;
+
+    function crossfadeTo(url, alt) {
+      if (!url || url === currentUrl) return;
+      const next = activeLayer ^ 1;
+      const nextImg = layers[next];
+      const prevImg = layers[activeLayer];
+const token = ++loadToken;
+      nextImg.onload = () => {
+        if (token !== loadToken) return;
+        nextImg.alt = alt || '';
+        nextImg.hidden = false;
+        requestAnimationFrame(() => {
+          nextImg.classList.add('show');
+          prevImg.classList.remove('show');
+          setTimeout(() => {
+            prevImg.hidden = true;
+            activeLayer = next;
+            currentUrl = url;
+            sk.hidden = true;
+          }, 180);
+        });
+      };
+      nextImg.onerror = () => {};
+      nextImg.src = url;
+    }
+
+    function prefetchNeighbors(data, sel, condSlider, guideSlider){
+      const b = data.byPrefix.get(sel.value);
+      const ci = parseInt(condSlider.value, 10);
+      const gi = parseInt(guideSlider.value, 10);
+      const cand = [];
+      const cA = b.condArr, gA = b.guideArr;
+      function push(cIdx, gIdx){
+        if (cIdx < 0 || cIdx >= cA.length || gIdx < 0 || gIdx >= gA.length) return;
+        const u = b.grid.get(cA[cIdx])?.get(gA[gIdx]);
+        if (u) cand.push(u);
+      }
+      push(ci+1, gi); push(ci-1, gi); push(ci, gi+1); push(ci, gi-1);
+      cand.forEach(u => { const im = new Image(); im.src = u; });
+    }
+
     function wireUI(data) {
       const sel = document.getElementById('promptSelect');
       const condSlider = document.getElementById('condSlider');
       const guideSlider = document.getElementById('guideSlider');
       const condVal = document.getElementById('condVal');
       const guideVal = document.getElementById('guideVal');
-      const img = document.getElementById('preview');
-      const skeleton = document.getElementById('skeleton');
       const meta = document.getElementById('meta');
+
+      layers[0] = document.getElementById('layer0');
+      layers[1] = document.getElementById('layer1');
 
       const entries = Array.from(data.byPrefix.values()).sort((a,b)=>a.display.localeCompare(b.display));
       entries.forEach(e => { const o = document.createElement('option'); o.value = e.rawPrefix; o.textContent = e.display; sel.appendChild(o); });
@@ -261,16 +304,13 @@
         condVal.textContent = st.condStr;
         guideVal.textContent = st.guideStr;
         meta.textContent = `${st.prefix}_conditioning_scale${st.condStr}_guidance_scale${st.guideStr}`;
-        skeleton.hidden = false; img.hidden = true; img.removeAttribute('src'); img.alt = meta.textContent;
-        if (!st.url) { skeleton.hidden = true; meta.textContent += ' (missing image)'; return; }
-        img.onload = () => { skeleton.hidden = true; img.hidden = false; };
-        img.onerror = () => { skeleton.hidden = true; meta.textContent += ' (failed to load)'; };
-        img.src = st.url;
+        crossfadeTo(st.url, meta.textContent);
         const url = new URL(location.href);
         url.searchParams.set('prefix', st.prefix);
         url.searchParams.set('c', st.condStr);
         url.searchParams.set('g', st.guideStr);
         history.replaceState(null, '', url.toString());
+        prefetchNeighbors(data, sel, condSlider, guideSlider);
       }
 
       sel.addEventListener('change', () => setSlidersFor(sel.value));

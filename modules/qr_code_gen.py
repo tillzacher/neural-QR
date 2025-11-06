@@ -11,9 +11,6 @@ if not os.path.exists("output_images/temp"):
 def generate_qr_code(data, filename=None, version=None,
                      error_correction=qrcode.constants.ERROR_CORRECT_H,
                      border=4, mask_logo=4, box_size=20):
-    """
-    Generates a QR code with a white 'blank' center for a logo area.
-    """
     qr = qrcode.QRCode(
         version=version,
         error_correction=error_correction,
@@ -22,7 +19,7 @@ def generate_qr_code(data, filename=None, version=None,
     )
     qr.add_data(data)
     qr.make(fit=True)
-    img = qr.make_image().convert("RGB")  # ensure RGB
+    img = qr.make_image().convert("RGB")
 
     if mask_logo is not None:
         # 'blank out' the center region
