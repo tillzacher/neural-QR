@@ -54,6 +54,10 @@ Stable Diffusion–powered, flexible, _artistic_ QR code generation that (mostly
 
 ## How it Works
 
+<p align="center">
+  <img src="readme_imgs/vibrant_space_nebula_low_poly_art_conceptual.gif" alt="How it works animation" width="360">
+  
+</p>
 
 Key idea: **ControlNet locks structure** where scanners need it, while the model paints everything else. The tiered noise keeps the code bits readable and the art bits expressive.
 
