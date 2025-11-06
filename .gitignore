@@ -10,3 +10,5 @@ modules/__pycache__/*
 *.pyc
 modules/__pycache__/diffuser.cpython-310.pyc
 modules/__pycache__/input_gen.cpython-310.pyc
+.vscode
+.DS_Store
